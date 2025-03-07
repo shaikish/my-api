@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Profile = () => {
+const Profile = ({ API_URL }) => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/user', { headers: { 'auth-token': token } });
+      const res = await axios.get(`${API_URL}/user`, { headers: { 'auth-token': token } }); // Use API_URL here
       setUser(res.data);
     } catch (err) {
       alert('Error fetching user');
@@ -23,7 +23,7 @@ const Profile = () => {
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [API_URL]); // Add API_URL to dependency array to refetch if it changes
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>

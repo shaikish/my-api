@@ -6,6 +6,9 @@ import Profile from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Define the API URL
+const API_URL = 'https://my-api-ivhy.onrender.com';
+
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
@@ -54,14 +57,14 @@ const App = () => {
 
       {/* Routes */}
       <Routes>
-        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} API_URL={API_URL} />} />
+        <Route path="/register" element={<Register API_URL={API_URL} />} />
+        <Route path="/forgot-password" element={<ForgotPassword API_URL={API_URL} />} />
         <Route
           path="/profile"
           element={
             <ProtectedRoute>
-              <Profile />
+              <Profile API_URL={API_URL} />
             </ProtectedRoute>
           }
         />

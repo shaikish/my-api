@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = ({ setIsLoggedIn }) => {
+const Login = ({ setIsLoggedIn, API_URL }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const login = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/login', { username, password });
+      const res = await axios.post(`${API_URL}/login`, { username, password }); // Use API_URL here
       localStorage.setItem('token', res.data); // Save token to localStorage
       setIsLoggedIn(true); // Update login state
       navigate('/profile'); // Redirect to profile page
