@@ -7,44 +7,67 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Could not connect to MongoDB', err));
+// ✅ Improved CORS for both local & deployed frontend
+app.use(cors({
+  origin: ["http://localhost:3000", "https://my-app.vercel.app"], 
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
-// User Schema
+// ✅ Ensure MONGO_URI is set before connecting
+if (!process.env.MONGO_URI) {
+  console.error("❌ MONGO_URI is not set. Check your environment variables.");
+  process.exit(1);
+}
+
+// ✅ Improved MongoDB connection with debugging
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => {
+  console.error('❌ Could not connect to MongoDB:', err);
+  process.exit(1);
+});
+
+// ✅ Debug MongoDB Connection Route
+app.get('/debug-db', async (req, res) => {
+  try {
+    await mongoose.connection.db.admin().ping();
+    res.send('✅ MongoDB is connected!');
+  } catch (err) {
+    console.error('Database connection issue:', err);
+    res.status(500).send('❌ MongoDB connection failed');
+  }
+});
+
+// ✅ Basic Route
+app.get('/', (req, res) => {
+  res.send('Welcome to the API!');
+});
+
+// ✅ Auth Routes (Register & Login)
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 });
-
 const User = mongoose.model('User', userSchema);
 
 // Register User
 app.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).send('Username and password are required');
 
-    // Check if username and password are provided
-    if (!username || !password) {
-      return res.status(400).send('Username and password are required');
-    }
-
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user
     const user = new User({ username, password: hashedPassword });
-
-    // Save the user to the database
     await user.save();
 
-    // Send success response
     res.status(201).send('User registered');
   } catch (err) {
-    console.error('Error registering user:', err); // Log the error
+    console.error('Error registering user:', err);
     res.status(400).send('Error registering user');
   }
 });
@@ -53,73 +76,22 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).send('Username and password are required');
 
-    // Check if username and password are provided
-    if (!username || !password) {
-      return res.status(400).send('Username and password are required');
-    }
-
-    // Find the user in the database
     const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).send('User not found');
-    }
+    if (!user) return res.status(400).send('User not found');
 
-    // Check if the password is correct
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(400).send('Invalid password');
-    }
+    if (!validPassword) return res.status(400).send('Invalid password');
 
-    // Generate a JWT token
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-
-    // Send the token in the response
     res.header('auth-token', token).send(token);
   } catch (err) {
-    console.error('Error logging in:', err); // Log the error
+    console.error('Error logging in:', err);
     res.status(400).send('Error logging in');
   }
 });
 
-// Protected Route (Example)
-app.get('/user', async (req, res) => {
-  try {
-    // Get the token from the header
-    const token = req.header('auth-token');
-    if (!token) {
-      return res.status(401).send('Access denied');
-    }
-
-    // Verify the token
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Find the user in the database
-    const user = await User.findById(verified._id);
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-
-    // Send the user data in the response
-    res.send(user);
-  } catch (err) {
-    console.error('Error fetching user:', err); // Log the error
-    res.status(400).send('Invalid token');
-  }
-});
-
-// Test Database Connection
-app.get('/test-db', async (req, res) => {
-  try {
-    // Fetch all users from the database
-    const users = await User.find();
-    res.send(users);
-  } catch (err) {
-    console.error('Database error:', err); // Log the error
-    res.status(500).send('Database error');
-  }
-});
-
-// Start the server
+// ✅ Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
