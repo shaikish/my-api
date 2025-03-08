@@ -13,14 +13,16 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  // Check if the user is logged in on initial load
+  // Check if the user is logged in and test API connection
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
+    setIsLoggedIn(!!token); // Set login state based on token presence
+
+    // ✅ Test API Connection
+    fetch(`${API_URL}/`)
+      .then(response => response.text())
+      .then(data => console.log("Backend says:", data))
+      .catch(error => console.error("API Error:", error));
   }, []);
 
   // Logout function
