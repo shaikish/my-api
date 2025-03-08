@@ -6,7 +6,7 @@ import Profile from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Define the API URL
+// Define the API URL (replace with your Render backend URL)
 const API_URL = 'https://my-api-ivhy.onrender.com';
 
 const App = () => {
