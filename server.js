@@ -48,14 +48,14 @@ app.get('/', (req, res) => {
   res.send('Welcome to the API!');
 });
 
-// ✅ Auth Routes (Register & Login)
+// ✅ User Schema & Model
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 });
 const User = mongoose.model('User', userSchema);
 
-// Register User
+// ✅ Register User
 app.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -72,7 +72,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login User
+// ✅ Login User
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -89,6 +89,17 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Error logging in:', err);
     res.status(400).send('Error logging in');
+  }
+});
+
+// ✅ Test Database Connection
+app.get('/test-db', async (req, res) => {
+  try {
+    const users = await User.find(); // Fetch all users from MongoDB
+    res.json(users);
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).send('❌ Database error');
   }
 });
 
